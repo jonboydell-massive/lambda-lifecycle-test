@@ -1,0 +1,18 @@
+FROM node:boron
+SHELL ["/bin/bash", "-c"]
+
+RUN mkdir -p /srv
+WORKDIR /srv
+
+RUN apt-get update
+RUN apt-get -y upgrade
+RUN apt-get install -y python3-pip zip jq
+RUN pip3 install boto3
+
+COPY /package.json /srv/package.json
+COPY /lambda-lifecycle-test.js /srv/lambda-lifecycle-test.js
+COPY /ops /srv/ops
+
+RUN npm install --production
+
+CMD ["/srv/ops/cd/deploy.sh"]

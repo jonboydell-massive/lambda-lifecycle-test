@@ -1,0 +1,30 @@
+FROM node:boron
+
+ENV SONAR_SCANNER_VERSION 3.1.0.1141
+
+
+RUN echo 'deb http://deb.debian.org/debian jessie-backports main' > /etc/apt/sources.list.d/jessie-backports.list
+RUN apt-get update -y
+RUN apt-get install -y --target-release jessie-backports \
+                       openjdk-8-jre-headless \
+                       ca-certificates-java \
+                       unzip
+
+WORKDIR /opt
+
+RUN curl -o- -L https://yarnpkg.com/install.sh | bash
+
+RUN wget https://sonarsource.bintray.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SONAR_SCANNER_VERSION}.zip && \
+    unzip sonar-scanner-cli-${SONAR_SCANNER_VERSION} && \
+    cd /usr/local/bin && ln -s /opt/sonar-scanner-${SONAR_SCANNER_VERSION}/bin/sonar-scanner sonar-scanner && \
+    rm -f /opt/sonar-scanner-cli-${SONAR_SCANNER_VERSION}.zip
+
+
+RUN mkdir -p /srv
+WORKDIR /srv
+
+COPY . .
+
+RUN yarn install
+
+CMD [ "npm", "run", "test" ]
